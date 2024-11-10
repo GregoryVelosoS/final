@@ -1,3 +1,4 @@
+// Importação dos components do react-bootstrap utilizados
 import Container from "react-bootstrap/esm/Container";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import Form from "react-bootstrap/Form";
@@ -5,9 +6,11 @@ import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Nav from "react-bootstrap/Nav";
 
-import { useState, useEffect } from "react";
+// Importação do useState pra monitorar as variáveis
+import { useState } from "react";
 
-const url = "http://localhost:5000/usuarios";
+// Importação do useNavigate pra mudança da página
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   // variaveis pro usuario
@@ -19,55 +22,55 @@ const Login = () => {
   const [alertaMensagem, setAlertaMensagem] = useState("");
   const [alertaVariant, setAlertaVariant] = useState("danger");
 
-  //Lista de usuarios
-  const [usuarios, setUsuarios] = useState([]);
+  // variavel pro navigate
+  const navigate = useNavigate();
 
-  //Resgate de dados da API
-  useEffect(() => {
-   
-    
-    console.log(usuarios);
-  }, []);
+  // gravar usuário no localStorage
+  const gravarLocalStorage = (usuario) => {
+    localStorage.setItem("userName", usuario.usu_nome);
+    localStorage.setItem("userEmail", usuario.usu_email);
+    localStorage.setItem("userTipo", usuario.usu_tipo);
+  };
 
-  const gravarLocalStorage = (usuario) =>{
-    localStorage.setItem("userName", usuario.nome)
-    localStorage.setItem("userEmail", usuario.email)   
-  }
-  async function fetchData() {
-    try {
-      const res = await fetch(url);
-      const users = await res.json();
-      setUsuarios(users);
-    } catch (error) {
-      console.log(error.message);
-    }
-  }
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    fetchData();
-
-    const user = { email, senha };
-
-    //Verifica na lista de usuarios se tem o usuario digitado
-    const userToFind = usuarios.find(
-      (userFind) => userFind.email == user.email
-    );
-
     if (email != "") {
       if (senha != "") {
-        if (userToFind != undefined && userToFind.senha == senha) {
-          console.log(userToFind);
-          console.log("entrou");
-          setAlertaClass("mb-3");
-          gravarLocalStorage(userToFind)
-          alert("Login efetuado com Sucesso");
-          setAlertaMensagem("Login efetuado com Sucesso");
-          setAlertaVariant("success");
-        } else {
-          setAlertaClass("mb-3");
-          setAlertaMensagem("Usuário ou senha inválides");
-        }
+        // Cria um objeto com as informações preenchidas
+        const user = { email, senha };
+
+        // Passa as informações via query na url
+        const url = new URL("http://localhost:5000/usuario/entrar/");
+        url.search = new URLSearchParams(user).toString();
+
+        // Faz a requisição a api pra criar o pegar o usuário
+        const req = await fetch(url, {
+          method: "GET",
+        });
+
+        //Guarda o retorno da requisição na variável res
+        const res = req.json();
+
+        //Caso o retorno da requisição seja vazia, não achou usuário com aquelas credenciais, se achou loga
+        res
+          .then((resultado) => {
+            if (resultado.includes("incorretas")) {
+              setAlertaClass("mb-3");
+              setAlertaMensagem("Usuário ou senha inválidos");
+            } else {
+              setAlertaClass("mb-3");
+              setAlertaMensagem("Login efetuado com Sucesso");
+              setAlertaVariant("success");
+              const usuario = JSON.parse(resultado)
+              gravarLocalStorage(usuario[0]);
+              alert("Login efetuado com Sucesso");
+              setEmail("");
+              setSenha("");
+              navigate("/home");
+            }
+            // console.log(resultado);
+          })
+          .catch((erro) => console.error(erro));
       } else {
         setAlertaClass("mb-3");
         setAlertaMensagem("O campo senha não pode ser vazio");
@@ -81,7 +84,11 @@ const Login = () => {
   return (
     <div>
       <Container>
-        <span class="material-symbols-outlined" style={{ fontSize: "100px" }}>
+        {/* Logo*/}
+        <span
+          className="material-symbols-outlined"
+          style={{ fontSize: "100px" }}
+        >
           login
         </span>
         <form onSubmit={handleLogin}>
@@ -117,10 +124,12 @@ const Login = () => {
             />
           </FloatingLabel>
 
+        {/* Alerta, caso possua algum erro*/}
           <Alert key="danger" variant={alertaVariant} className={alertaClass}>
             {alertaMensagem}
           </Alert>
 
+        {/* Botão pra enviar o formulário*/}
           <Button variant="primary" type="submit">
             Login
           </Button>
@@ -128,7 +137,17 @@ const Login = () => {
 
         <p>
           Não tem cadastro?
-          <Nav.Link href="/cadastrar" style={{color:"blue", textDecoration:'underline'}}>Cadastrar-se</Nav.Link>
+          <Nav.Link
+            href="/cadastrar"
+            style={{
+              color: "blue",
+              textDecoration: "underline",
+              display: "inline-block",
+              marginLeft: "5px",
+            }}
+          >
+            Cadastrar-se
+          </Nav.Link>
         </p>
       </Container>
     </div>
