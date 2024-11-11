@@ -24,7 +24,8 @@ const CardProduto = (props) => {
         <Card border="primary" style={{ width: "17rem", height:"26rem" }}>
           <Card.Img
             variant="top"
-            src="https://assets.goal.com/images/v3/blt2aaca933046f8b00/Cristiano%20Ronaldo%20Portugal%202024%20(4).jpg?auto=webp&format=pjpg&width=3840&quality=60"
+            src={props.imagemUrl}
+            height="200px"
           />
           <Card.Body>
             <Card.Title>{props.nome} </Card.Title>

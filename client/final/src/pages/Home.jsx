@@ -106,6 +106,7 @@ const Home = () => {
                 preco={prod.it_preco}
                 data={prod.it_dt_cad}
                 categoria={prod.cat_nome}
+                imagemUrl={`http://localhost:5000/images/${prod.it_imagem}`} // Caminho completo da imagem
               />
             ) : null
           )}

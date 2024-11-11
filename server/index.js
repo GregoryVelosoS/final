@@ -1,7 +1,11 @@
 const express = require("express");
 const app = express();
 const port = 5000;
+
 const mysql = require("mysql2");
+
+const fileUpload = require('express-fileupload')
+app.use(fileUpload())
 
 const path = require("path");
 
@@ -99,15 +103,19 @@ app.get("/produtos", (req, res) => {
   });
 });
 
+app.use("/images", express.static(__dirname + "/images"));
+
 // Rota para criação do produto
 app.post("/produtos/criar", (req, res) => {
   const nome = req.body.nome;
   const descricao = req.body.descricao;
   const categoria = req.body.categoria;
   const preco = req.body.preco;
-  const imagem = req.body.imagem;
+  const img = Date.now().toString() + "_" + req.files.imagem.name;
+ 
+  req.files.imagem.mv(__dirname+'/images/'+ img)
 
-  const sql = `INSERT INTO itens (it_nome, it_desc, it_cat, it_preco, it_imagem ) VALUES ('${nome}', '${descricao}', '${categoria}', '${preco}', '${imagem}')`;
+  const sql = `INSERT INTO itens (it_nome, it_desc, it_cat, it_preco, it_imagem ) VALUES ('${nome}', '${descricao}', '${categoria}', '${preco}', '${img}')`;
 
   conn.query(sql, (erro) => {
     if (erro) {
